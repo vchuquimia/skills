@@ -23,40 +23,95 @@ When the user provides a work item ID, analyze it and produce a refined, structu
 
 ---
 
+## Output Style: ADHD-Friendly Mode
+
+All responses produced while executing this skill MUST follow these rules. No exceptions unless explicitly noted.
+
+### Core Facts
+
+1. Working memory is small. Anything not on screen is forgotten.
+2. The friction between "got it" and "done it" is where work dies.
+3. Starting is the hardest step. The first action must be obvious, small, and doable now.
+4. Vague time estimates fail. Use concrete units.
+5. Dopamine is scarce. Visible progress matters.
+
+### Rules
+
+1. **Lead with the next action.** First line = something the reader can do. Not context. Not a plan.
+2. **Number multi-step tasks.** Each step is one bounded action. No step contains "and then" twice. Fewest steps that still work.
+3. **End with one concrete next action.** Name ONE thing doable in under two minutes.
+4. **Suppress tangents.** Finish the first issue. Offer the second as a separate question.
+5. **Restate state every turn.** "Estamos en paso 3 de 5" — always explicit.
+6. **Give specific time estimates.** "~15 min", "~2 min", not "some work".
+7. **Make completed work visible.** Show what now works, in concrete terms.
+8. **Matter-of-fact tone for errors.** No "Uh oh". State cause and fix directly.
+9. **Cap lists at 5 items.** Beyond 5 → split into "ahora" vs "después".
+10. **No preamble, no recap, no closing pleasantries.** Start with the answer. End when the answer is done.
+
+### Forbidden
+
+- Openers: "Great question," "Let me...", "I'll...", "Sure!", "Looking at your..."
+- Closers: "Let me know if you need anything else," "Hope this helps," "Happy to clarify"
+- Hedging adverbs: "perhaps," "might," "could possibly"
+- Idioms or figurative phrases — use the literal action.
+
+### Pre-Send Check
+
+Before every response, delete:
+1. First sentence if it announces what you are about to do.
+2. Last sentence if it asks "anything else?" or recaps.
+3. Any "by the way" sidebar.
+
+Verify: if the reader reads only the first line and the last line, do they know (a) what to do next, and (b) what just happened?
+
+---
+
 ## Output Structure (mandatory format)
 
 The refined description MUST follow this exact markdown structure:
 
 ```markdown
-## Problema
+### PROBLEMA
 
 - bullet point 1 describing a specific problem or symptom
 - bullet point 2 (if applicable)
 
-## Solución
+### SOLUCIÓN
+
+**Hacer:**
 
 - bullet point 1 describing a specific action to take
 - bullet point 2 (if applicable)
 
-## Casos Borde
+**Aceptación:**
 
-Un caso borde es una situación límite o poco frecuente que el sistema debe manejar correctamente — por ejemplo: valores nulos, listas vacías, registros duplicados, permisos insuficientes, o condiciones de carrera entre operaciones concurrentes.
+- ☐ verification criterion 1
+- ☐ verification criterion 2
 
-- bullet point describing an edge case the developer should handle
-- bullet point describing another edge case (if applicable)
+**No tocar:**
 
-## Contexto
+- constraint 1
+- constraint 2
 
-- supporting information: affected screens, entities, modules, code paths
-- links to emails, attachments, or related work items if available
-- screenshots (embed existing attachment URLs from the work item)
+**Bordes:**
+
+- edge case 1
+- edge case 2
+
+### CONTEXTO
+
+| Qué | Dónde/Detalle |
+|-----|---------------|
+| item | location or detail |
 ```
 
 Rules:
-- **Problema**: describe observable symptoms from the user's perspective. Be specific — include entity names, screen names, error messages when known.
-- **Solución**: describe what needs to change. Reference specific classes, stored procedures, or configuration when the codebase analysis reveals them. Keep it actionable but not prescriptive about implementation details.
-- **Casos Borde**: list edge cases discovered during codebase analysis — situations that could break or produce unexpected results if not handled. Think: null values, empty collections, duplicate records, concurrent operations, missing permissions, boundary values (max int, empty string, zero-length periods).
-- **Contexto**: provide technical and domain context that helps the developer understand the full picture — affected code paths, related modules, screenshots, and references.
+- **PROBLEMA**: describe observable symptoms from the user's perspective. Be specific — include entity names, screen names, error messages when known.
+- **SOLUCIÓN / Hacer**: describe what needs to change. Reference specific classes, stored procedures, or configuration when the codebase analysis reveals them. Keep it actionable.
+- **SOLUCIÓN / Aceptación**: checkboxes a dev can verify after implementing.
+- **SOLUCIÓN / No tocar**: explicit constraints on what must remain unchanged.
+- **SOLUCIÓN / Bordes**: edge cases discovered during codebase analysis — null values, empty collections, boundary conditions, concurrent operations.
+- **CONTEXTO**: table with technical references — affected files, modules, tables, mappings.
 
 ---
 
@@ -79,7 +134,7 @@ From the existing description, comments, and attachments, extract:
 - Who reported it and from where (origin entity, ticket reference).
 - What the expected behavior should be.
 
-**Format normalization:** If the existing description is in HTML format (contains `<div>`, `<span>`, `<ul>`, `<img>`, etc.), convert it mentally to markdown for analysis. When writing the refined description, ALWAYS output pure markdown. Azure DevOps supports markdown in the Description field — the `multilineFieldsFormat` will be set to `"markdown"` automatically when the value is sent as markdown text.
+**Format normalization:** If the existing description is in HTML format (contains `<div>`, `<span>`, `<ul>`, `<img>`, etc.), convert it mentally to markdown for analysis. When writing the refined description, ALWAYS output pure markdown. Azure DevOps supports markdown in the Description field.
 
 If the description is too vague to produce a useful Problema section, ask the user ONE clarifying question.
 
@@ -102,7 +157,7 @@ Use the project structure:
 
 ### 4. Generate the refined description (~3 min)
 
-Write the description in the mandatory Problema / Solución / Contexto format.
+Write the description in the mandatory PROBLEMA / SOLUCIÓN / CONTEXTO format.
 
 - Keep bullet points concise — one idea per bullet.
 - Embed existing screenshot URLs from attachments using `![Image](url)`.
@@ -114,19 +169,17 @@ Write the description in the mandatory Problema / Solución / Contexto format.
 
 Format the response as:
 
-1. A header: `### Preview de descripción refinada`
-2. The full refined description in a markdown code block (so the user sees the raw markdown that will be saved).
-3. Link: `[Open Work Item #{ID}](https://dev.azure.com/sda-iatec/Sda.Aasi.Net/_workitems/edit/{ID})`
-4. Last line: **"Aplicar al work item? (si / ajustar / cancelar)"**
+1. The full refined description (raw markdown the user can read).
+2. Link: `[Open Work Item #{ID}](https://dev.azure.com/sda-iatec/Sda.Aasi.Net/_workitems/edit/{ID})`
+3. Last line: **"Aplicar al work item? (si / ajustar / cancelar)"**
 
 **Do NOT call any Azure DevOps write API at this point. Wait for user input.**
 
 ### 6. Handle user response (only after explicit confirmation)
 
-- **"si" / "yes" / "dale" / "aplicar"** → NOW update the work item description via MCP (action: `update`, path: `/fields/System.Description`, value: the refined description as **markdown**). Always send markdown format. Confirm: "Descripción actualizada en #{ID}."
-- **"ajustar" / "adjust" / feedback** → Incorporate feedback, regenerate, show new preview (return to step 5). Do NOT save.
-- **"cancelar" / "cancel" / "no"** → End. "Cancelado — sin cambios."
-- **Any other response** → Treat as adjustment feedback, regenerate, return to step 5.
+- **"si" / "yes" / "dale" / "aplicar"** → Update the work item description via MCP (action: `update`, path: `/fields/System.Description`, value: the refined description as markdown). Confirm: "Descripción actualizada en #{ID}."
+- **"ajustar" / feedback** → Incorporate feedback, regenerate, show new preview (return to step 5).
+- **"cancelar" / "no"** → "Cancelado — sin cambios."
 
 ---
 
@@ -134,9 +187,8 @@ Format the response as:
 
 - [ ] Problema section describes observable symptoms, not implementation details.
 - [ ] Solución section is actionable — a developer knows what to change.
-- [ ] Contexto section includes all relevant technical references found in the codebase.
+- [ ] Contexto table includes all relevant technical references found in the codebase.
 - [ ] Existing screenshots/attachments from the work item are preserved (embedded via URL).
-- [ ] Format matches the ## Problema / ## Solución / ## Contexto structure exactly.
+- [ ] Format matches the ### PROBLEMA / ### SOLUCIÓN / ### CONTEXTO structure exactly.
 - [ ] No preamble before the preview. No recap after.
-- [ ] First line of response = the refined description.
 - [ ] Last line = "Aplicar al work item? (si / ajustar / cancelar)".
